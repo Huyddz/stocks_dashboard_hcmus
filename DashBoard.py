@@ -23,7 +23,27 @@ def fetch_annual_financials(symbol):
 def fetch_daily_price_history(symbol):
     stock = yf.Ticker(symbol)
     return stock.history(period='1d', interval='1h')
-
+#Time fixed
+#currency fixed
+def format_market_cap(value, currency):
+    
+    # Convert to USD equivalent for consistent display
+    if currency == 'VND':
+        value = value / 
+        currency = 'USD (approx)'
+    elif currency == 'JPY':
+        value = value / 150  
+        currency = 'USD (approx)'
+    
+    if value >= 1_000_000_000_000:  
+        return f"{currency} {value / 1_000_000_000_000:.2f}T"
+    elif value >= 1_000_000_000:  
+        return f"{currency} {value / 1_000_000_000:.2f}B"
+    elif value >= 1_000_000:  
+        return f"{currency} {value / 1_000_000:.2f}M"
+    else:
+        return f"{currency} {value:,.0f}"
+        
 #Dashboard
 st.title('Stock Dashboard by SongChiTienQuan')
 symbol = st.text_input('Enter a stock symbol', '')
@@ -33,9 +53,14 @@ information = fetch_stock_info(symbol)
 st.header('Company Information')
 
 st.subheader(f'Name: {information["longName"]}')
-st.subheader(f'Market Cap: ${information["marketCap"]:,}')
-st.subheader(f'Sector: {information["sector"]}')
 
+    currency = information.get('currency', 'USD')
+    market_cap = information.get('marketCap', 0)
+    
+    
+    st.subheader(f'Market Cap: {format_market_cap(market_cap, currency)}')
+    st.caption(f'Native Currency: {currency} | Raw Value: {market_cap:,}')
+#Currency change(only USD to VND) Be careful Duy
 price_history = fetch_daily_price_history(symbol)
 #Daily
 st.header('Daily Chart')
