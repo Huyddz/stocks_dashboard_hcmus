@@ -3,7 +3,9 @@ import plotly.graph_objects as go
 import streamlit as st
 import yfinance as yf
 import pandas as pd
+import finnhub
 
+finnhub_client = finnhub.Client(api_key="d4o6bmhr01qtrbsism90d4o6bmhr01qtrbsism9g")
 
 @st.cache_data
 def fetch_stock_info(symbol):
@@ -127,4 +129,3 @@ if symbol:
                 )
                 st.altair_chart(revenue_chart, use_container_width=True)
                 st.altair_chart(net_income_chart, use_container_width=True)
-
