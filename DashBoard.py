@@ -4,7 +4,7 @@ import plotly.graph_objects as go #Graph
 import streamlit as st #Deploy web
 import yfinance as yf #Data collecting from YahooFiance
 import pandas as pd #Graph support
-from polygon import RESTClient #API for auto suggestion (i hope it works)
+from polygon.rest import RESTClient #API for auto suggestion (i hope it works)
 #API key(be careful)
 POLYGON_API_KEY = "WakFbeRcsuUV8Q8ECdZZz32KJaVeu2g2"
 polygon_client = RESTClient(api_key=POLYGON_API_KEY)
