@@ -53,26 +53,23 @@ def fetch_daily_price_history(symbol):
 
 def search_wrapper(query: str, **kwargs):
     
-    # Polygon search usually works best with 3 or more characters
     if not query or len(query.strip()) < 3:
         return []
     
     try:
-  
+        
         results = polygon_client.list_tickers(
             search=query,
             market='stocks',
-            active=True,
             order='asc',
             limit=20 
         )
         
-  
+        
         if not results.results:
             st.info(f"Polygon returned no results for '{query}'. Check API status or symbol.")
             return []
             
-        
         stocks = [f"{item.ticker} - {item.name}" for item in results.results]
         return stocks
         
