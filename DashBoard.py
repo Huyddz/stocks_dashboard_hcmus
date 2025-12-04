@@ -6,8 +6,6 @@ import yfinance as yf #Data collecting from YahooFiance
 import pandas as pd #Graph support
 import finnhub #Excahnge currency
 
-finnhub_client = finnhub.Client(api_key="d4o6bmhr01qtrbsism90d4o6bmhr01qtrbsism9g")
-#Find Stock
 @st.cache_data
 def fetch_stock_info(symbol):
     try:
@@ -20,7 +18,7 @@ def fetch_stock_info(symbol):
     except Exception as e:
         st.error(f"FATAL ERROR: Failed to fetch yfinance data for {symbol}. Error: {e}")
         return None
-#Quarterly data
+
 @st.cache_data
 def fetch_quarterly_financials(symbol):
     try:
@@ -28,7 +26,7 @@ def fetch_quarterly_financials(symbol):
         return stock.quarterly_financials.T
     except Exception:
         return pd.DataFrame()
-#Annual data
+
 @st.cache_data
 def fetch_annual_financials(symbol):
     try:
@@ -36,7 +34,7 @@ def fetch_annual_financials(symbol):
         return stock.financials.T
     except Exception:
         return pd.DataFrame()
-#Daily data
+
 @st.cache_data
 def fetch_daily_price_history(symbol):
     try:
@@ -47,11 +45,12 @@ def fetch_daily_price_history(symbol):
         st.error(f"Error fetching price history for {symbol}. Error: {e}")
         return pd.DataFrame()
     
-#Search box
+# Function used by the streamlit_searchbox component
 def search_wrapper(query: str, **kwargs):
     if not query:
         return []
     try:
+        
         result = finnhub_client.symbol_lookup(query)
         
         stocks = [item for item in result.get('result', []) if item.get('type') == 'common stock']
@@ -62,11 +61,7 @@ def search_wrapper(query: str, **kwargs):
 
 @st.cache_data
 def search_stock_symbols(query):
-
-    return []
-
-@st.cache_data
-def search_stock_symbols(query):
+    
     return []
 
 
@@ -89,7 +84,7 @@ if 'selected_symbol' not in st.session_state:
     st.session_state.selected_symbol = ''
 
 
-# searchbar bros
+# Search bar
 selected_option = st_searchbox(
     label="Enter a company name or stock symbol",
     search_function=search_wrapper,
@@ -192,6 +187,10 @@ if symbol_to_display:
                 net_income_chart = alt.Chart(annual_financials).mark_bar(color='orange').encode(
                     x=alt.X('Year:O', sort='-x'),
                     y='Net Income'
+                ).properties(title='Net Income (Annual)')
+                
+                st.altair_chart(revenue_chart, use_container_width=True)
+                st.altair_chart(net_income_chart, use_container_width=True)
                 ).properties(title='Net Income (Annual)')
                 
                 st.altair_chart(revenue_chart, use_container_width=True)
