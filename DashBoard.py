@@ -4,10 +4,11 @@ import plotly.graph_objects as go #Graph
 import streamlit as st #Deploy web
 import yfinance as yf #Data collecting from YahooFiance
 import pandas as pd #Graph support
-import finnhub #Excahnge currency
+from polygon import RESTClient #API for auto suggestion (i hope it works)
 #API key(be careful)
-finnhub_client = finnhub.Client(api_key="d4ogi0pr01quuso9iqr0d4ogi0pr01quuso9iqrg")
-
+POLYGON_API_KEY = "WakFbeRcsuUV8Q8ECdZZz32KJaVeu2g2"
+polygon_client = RESTClient(api_key=POLYGON_API_KEY)
+#Money matters
 @st.cache_data
 def fetch_stock_info(symbol):
     try:
@@ -48,28 +49,39 @@ def fetch_daily_price_history(symbol):
         return pd.DataFrame()
     
 
+
 def search_wrapper(query: str, **kwargs):
     
+    # Polygon search usually works best with 3 or more characters
     if not query or len(query.strip()) < 3:
         return []
     
     try:
-        result = finnhub_client.symbol_lookup(query)
+  
+        results = polygon_client.list_tickers(
+            search=query,
+            market='stocks',
+            active=True,
+            order='asc',
+            limit=20 
+        )
         
-        if result.get('count', 0) == 0 and result.get('result') == []:
-            st.info(f"Finnhub returned no results for '{query}'. Check API Key or Rate Limit.")
+  
+        if not results.results:
+            st.info(f"Polygon returned no results for '{query}'. Check API status or symbol.")
             return []
             
-        stocks = [item for item in result.get('result', []) if item.get('type') == 'common stock']
-        return [f"{item['symbol']} - {item['description']}" for item in stocks]
+        
+        stocks = [f"{item.ticker} - {item.name}" for item in results.results]
+        return stocks
         
     except Exception as e:
-        st.error(f"Finnhub API Search Failed: {e}. Check network connection.")
+        st.error(f"Polygon API Search Failed: {e}. Check API Key or network.")
         return []
 
 @st.cache_data
 def search_stock_symbols(query):
-    
+
     return []
 
 
@@ -99,7 +111,7 @@ selected_option = st_searchbox(
     placeholder="Start typing to see stock suggestions (e.g., AAPL, GOOGL)...",
     default_value=st.session_state.selected_symbol, 
     clear_on_submit=False,
-    key="finnhub_search_box"
+    key="polygon_search_box" 
 )
 
 
