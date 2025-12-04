@@ -61,10 +61,10 @@ def search_wrapper(query: str, **kwargs):
         results = polygon_client.list_tickers(
             search=query,
             market='stocks',
+            type='CS', # Filter for Common Stock (CS) to narrow the search
             order='asc',
             limit=20 
         )
-        
         
         if not results.results:
             st.info(f"Polygon returned no results for '{query}'. Check API status or symbol.")
