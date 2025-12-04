@@ -6,3 +6,4 @@ altair
 plotly
 watchdog
 finnhub-python
+streamlit-searchbox
