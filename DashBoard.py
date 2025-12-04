@@ -6,6 +6,7 @@ import pandas as pd #Graph support
 import finnhub #Excahnge currency
 
 
+# Use st.secrets for production, but using the key here for consistency
 finnhub_client = finnhub.Client(api_key="d4o6bmhr01qtrbsism90d4o6bmhr01qtrbsism9g")
 
 
@@ -13,8 +14,15 @@ finnhub_client = finnhub.Client(api_key="d4o6bmhr01qtrbsism90d4o6bmhr01qtrbsism9
 def fetch_stock_info(symbol):
     try:
         stock = yf.Ticker(symbol)
-        return stock.info
+        # Check if the info dictionary is actually populated
+        info = stock.info
+        if not info or info.get('regularMarketPrice') is None:
+            st.warning(f"No current market data found for {symbol}.")
+            return None
+        return info
     except Exception as e:
+        # 🌟 CRITICAL DEBUGGING LINE 🌟
+        st.error(f"FATAL ERROR: Failed to fetch yfinance data for {symbol}. Check network/package versions. Error: {e}")
         return None
 
 @st.cache_data
@@ -37,8 +45,11 @@ def fetch_annual_financials(symbol):
 def fetch_daily_price_history(symbol):
     try:
         stock = yf.Ticker(symbol)
-        return stock.history(period='1d', interval='1h')
-    except Exception:
+        # Fetching 1-hour intervals for the last 1 day
+        history = stock.history(period='1d', interval='1h')
+        return history
+    except Exception as e:
+        st.error(f"Error fetching price history for {symbol}. Error: {e}")
         return pd.DataFrame()
     
 @st.cache_data
@@ -51,6 +62,8 @@ def search_stock_symbols(query):
         stocks = [item for item in result.get('result', []) if item.get('type') == 'common stock']
         return stocks
     except Exception as e:
+        # 🌟 CRITICAL DEBUGGING LINE 🌟
+        st.error(f"FATAL ERROR: Failed to search Finnhub. Check API Key/Network. Error: {e}")
         return []
 
 def format_market_cap(value, currency):
@@ -148,7 +161,6 @@ if symbol_to_display:
                     orientation='horizontal'
                 )
             except Exception as e:
-                # Streamlit seclect box in case of failure :((((
                 print(f"Warning: Falling back to st.selectbox due to error: {e}")
                 selection = st.selectbox('Period', ['Quarterly', 'Annual'])
 
@@ -183,6 +195,10 @@ if symbol_to_display:
                 net_income_chart = alt.Chart(annual_financials).mark_bar(color='orange').encode(
                     x=alt.X('Year:O', sort='-x'),
                     y='Net Income'
+                ).properties(title='Net Income (Annual)')
+                
+                st.altair_chart(revenue_chart, use_container_width=True)
+                st.altair_chart(net_income_chart, use_container_width=True)
                 ).properties(title='Net Income (Annual)')
                 
                 st.altair_chart(revenue_chart, use_container_width=True)
