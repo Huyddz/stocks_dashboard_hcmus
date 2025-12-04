@@ -5,19 +5,23 @@ import streamlit as st  # Deploy web
 import yfinance as yf  # Data collecting from Yahoo Finance
 import pandas as pd  # Table support
 import requests  #  autocomplete search API
-import torch
+import torch #Sentiment predict
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
+# ================================================================
+#                       LOAD FINBERT
+# ================================================================
 
 @st.cache_resource
 def load_finbert():
-    tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
-    model = AutoModelForSequenceClassification.from_pretrained("ProsusAI/finbert")
+    tokenizer = AutoTokenizer.from_pretrained("yiyanghkust/finbert-tone")
+    model = AutoModelForSequenceClassification.from_pretrained("yiyanghkust/finbert-tone")
     return tokenizer, model
 
 tokenizer, model = load_finbert()
 
 def get_sentiment(text):
-    inputs = tokenizer(text, return_tensors="pt", truncation=True)
+    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True)
     outputs = model(**inputs)
     scores = torch.softmax(outputs.logits, dim=1)[0]
     labels = ["negative", "neutral", "positive"]
@@ -25,7 +29,7 @@ def get_sentiment(text):
 
 
 # ================================================================
-#                    FETCH STOCK INFO
+#                      FETCH STOCK INFO
 # ================================================================
 
 @st.cache_data
@@ -34,11 +38,9 @@ def fetch_stock_info(symbol):
         stock = yf.Ticker(symbol)
         info = stock.info
         if not info or info.get('regularMarketPrice') is None:
-            st.warning(f"No current market data found for {symbol}.")
             return None
         return info
-    except Exception as e:
-        st.error(f"FATAL ERROR: Failed to fetch yfinance data for {symbol}. Error: {e}")
+    except:
         return None
 
 @st.cache_data
@@ -58,12 +60,13 @@ def fetch_annual_financials(symbol):
 @st.cache_data
 def fetch_daily_price_history(symbol):
     try:
-        return yf.Ticker(symbol).history(period='1d', interval='1h')
+        return yf.Ticker(symbol).history(period="1d", interval="1h")
     except:
         return pd.DataFrame()
 
+
 # ================================================================
-#                  AUTO-COMPLETE SEARCH (Yahoo)
+#                      AUTO-COMPLETE SEARCH
 # ================================================================
 
 def search_wrapper(query: str, **kwargs):
@@ -89,6 +92,7 @@ def search_wrapper(query: str, **kwargs):
     except:
         return []
 
+
 # ================================================================
 #                       FORMAT NUMBER
 # ================================================================
@@ -110,13 +114,13 @@ def format_market_cap(value, currency):
 
 st.title(" Stock Dashboard by SongChiTienQuan")
 
-if 'selected_symbol' not in st.session_state:
-    st.session_state.selected_symbol = ''
+if "selected_symbol" not in st.session_state:
+    st.session_state.selected_symbol = ""
 
 selected_option = st_searchbox(
     label="Enter a company name or stock symbol",
     search_function=search_wrapper,
-    placeholder="Start typing to see stock suggestions (AAPL, GOOGL)...",
+    placeholder="Start typing (AAPL, TSLA, GOOGL...)",
     default_value=st.session_state.selected_symbol,
     clear_on_submit=False,
     key="stock_search_box"
@@ -124,27 +128,30 @@ selected_option = st_searchbox(
 
 if selected_option:
     st.session_state.selected_symbol = selected_option.split(" - ")[0]
-symbol_to_display = st.session_state.selected_symbol
+
+symbol = st.session_state.selected_symbol
+
 
 # ================================================================
-#                      DISPLAY STOCK INFO
+#                     DISPLAY STOCK INFO
 # ================================================================
 
-if symbol_to_display:
-    information = fetch_stock_info(symbol_to_display)
+if symbol:
+    info = fetch_stock_info(symbol)
 
-    if information:
-        st.header(' Company Information')
-        st.subheader(f"Name: {information.get('longName', 'N/A')}")
+    if info:
+        st.header(" Company Information")
+        st.subheader(f"Name: {info.get('longName', 'N/A')}")
 
-        currency = information.get("currency", "USD")
+        currency = info.get("currency", "USD")
         st.metric("Primary Trading Currency", currency)
 
-        market_cap = information.get("marketCap", 0)
+        market_cap = info.get("marketCap", 0)
         st.subheader(f"Market Cap: {format_market_cap(market_cap, currency)}")
         st.caption(f"Raw Value: {market_cap:,}")
 
-        history = fetch_daily_price_history(symbol_to_display)
+        # --- Price Chart ---
+        history = fetch_daily_price_history(symbol)
         if not history.empty:
             st.header(" Daily Chart")
             df = history.rename_axis("Date").reset_index()
@@ -160,30 +167,19 @@ if symbol_to_display:
             fig.update_layout(xaxis_rangeslider_visible=False)
             st.plotly_chart(fig, use_container_width=True)
 
-        # =========================================================
-        #                       FINANCIALS
-        # =========================================================
-        
-        q_fin = fetch_quarterly_financials(symbol_to_display)
-        a_fin = fetch_annual_financials(symbol_to_display)
+        # --- Financials ---
+        q_fin = fetch_quarterly_financials(symbol)
+        a_fin = fetch_annual_financials(symbol)
 
         if not q_fin.empty or not a_fin.empty:
             st.header("📑 Financials")
-
-            try:
-                from streamlit_option_menu import option_menu
-                period = option_menu(
-                    None, ["Quarterly", "Annual"],
-                    icons=["calendar4-week", "calendar2-range"],
-                    default_index=0, orientation="horizontal"
-                )
-            except:
-                period = st.selectbox("Period", ["Quarterly", "Annual"])
+            period = st.selectbox("Period", ["Quarterly", "Annual"])
 
             if period == "Quarterly" and not q_fin.empty:
                 q_fin = q_fin.rename_axis("Quarter").reset_index()
                 q_fin["Quarter"] = q_fin["Quarter"].astype(str)
 
+                # Revenue
                 st.altair_chart(
                     alt.Chart(q_fin).mark_bar(color="red").encode(
                         x=alt.X("Quarter:O", sort="-x"),
@@ -191,7 +187,7 @@ if symbol_to_display:
                     ).properties(title="Total Revenue (Quarterly)"),
                     use_container_width=True
                 )
-
+                # Net Income
                 st.altair_chart(
                     alt.Chart(q_fin).mark_bar(color="orange").encode(
                         x=alt.X("Quarter:O", sort="-x"),
@@ -204,6 +200,7 @@ if symbol_to_display:
                 a_fin = a_fin.rename_axis("Year").reset_index()
                 a_fin["Year"] = pd.to_datetime(a_fin["Year"]).dt.year.astype(str)
 
+                # Revenue
                 st.altair_chart(
                     alt.Chart(a_fin).mark_bar(color="red").encode(
                         x=alt.X("Year:O", sort="-x"),
@@ -211,7 +208,7 @@ if symbol_to_display:
                     ).properties(title="Total Revenue (Annual)"),
                     use_container_width=True
                 )
-
+                # Net Income
                 st.altair_chart(
                     alt.Chart(a_fin).mark_bar(color="orange").encode(
                         x=alt.X("Year:O", sort="-x"),
@@ -220,18 +217,17 @@ if symbol_to_display:
                     use_container_width=True
                 )
 
+# ================================================================
+#                       SENTIMENT ANALYSIS
+# ================================================================
 
-        # =========================================================
-        #                       AI SENTIMENT
-        # =========================================================
-        st.header(" Sentiment Analysis ")
+st.header(" Financial Sentiment Analysis (FinBERT)")
+text = st.text_area("Enter news or headlines about the stock:")
 
-        text = st.text_area("Enter news/headlines about this stock:")
-
-        if st.button("Analyze Sentiment"):
-            if text.strip():
-                sentiment, confidence = get_sentiment(text)
-                st.success(f"**Sentiment: {sentiment.capitalize()}**")
-                st.write(f"Confidence: {confidence:.2f}")
-            else:
-                st.warning("Please enter some text.")
+if st.button("Analyze Sentiment"):
+    if text.strip():
+        sentiment, confidence = get_sentiment(text)
+        st.success(f"Sentiment: **{sentiment.upper()}**")
+        st.write(f"Confidence Score: `{confidence:.2f}`")
+    else:
+        st.warning("Please enter text to analyze.")
