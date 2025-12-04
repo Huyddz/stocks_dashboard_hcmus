@@ -21,7 +21,6 @@ def fetch_stock_info(symbol):
             return None
         return info
     except Exception as e:
-        # 🌟 CRITICAL DEBUGGING LINE 🌟
         st.error(f"FATAL ERROR: Failed to fetch yfinance data for {symbol}. Check network/package versions. Error: {e}")
         return None
 
@@ -62,7 +61,7 @@ def search_stock_symbols(query):
         stocks = [item for item in result.get('result', []) if item.get('type') == 'common stock']
         return stocks
     except Exception as e:
-        # 🌟 CRITICAL DEBUGGING LINE 🌟
+   
         st.error(f"FATAL ERROR: Failed to search Finnhub. Check API Key/Network. Error: {e}")
         return []
 
@@ -196,10 +195,7 @@ if symbol_to_display:
                     x=alt.X('Year:O', sort='-x'),
                     y='Net Income'
                 ).properties(title='Net Income (Annual)')
-                
-                st.altair_chart(revenue_chart, use_container_width=True)
-                st.altair_chart(net_income_chart, use_container_width=True)
-                ).properties(title='Net Income (Annual)')
-                
+
+				
                 st.altair_chart(revenue_chart, use_container_width=True)
                 st.altair_chart(net_income_chart, use_container_width=True)
