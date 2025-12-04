@@ -6,3 +6,4 @@ altair
 plotly
 streamlit-searchbox
 polygon-api-client
+polygon
