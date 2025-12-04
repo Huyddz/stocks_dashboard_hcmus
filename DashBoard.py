@@ -1,29 +1,26 @@
 import altair as alt #Graph
+from streamlit_searchbox import st_searchbox #Search box update :3
 import plotly.graph_objects as go #Graph
 import streamlit as st #Deploy web
 import yfinance as yf #Data collecting from YahooFiance
 import pandas as pd #Graph support
 import finnhub #Excahnge currency
 
-
-# Use st.secrets for production, but using the key here for consistency
 finnhub_client = finnhub.Client(api_key="d4o6bmhr01qtrbsism90d4o6bmhr01qtrbsism9g")
-
-
+#Find Stock
 @st.cache_data
 def fetch_stock_info(symbol):
     try:
         stock = yf.Ticker(symbol)
-        # Check if the info dictionary is actually populated
         info = stock.info
         if not info or info.get('regularMarketPrice') is None:
             st.warning(f"No current market data found for {symbol}.")
             return None
         return info
     except Exception as e:
-        st.error(f"FATAL ERROR: Failed to fetch yfinance data for {symbol}. Check network/package versions. Error: {e}")
+        st.error(f"FATAL ERROR: Failed to fetch yfinance data for {symbol}. Error: {e}")
         return None
-
+#Quarterly data
 @st.cache_data
 def fetch_quarterly_financials(symbol):
     try:
@@ -31,7 +28,7 @@ def fetch_quarterly_financials(symbol):
         return stock.quarterly_financials.T
     except Exception:
         return pd.DataFrame()
-
+#Annual data
 @st.cache_data
 def fetch_annual_financials(symbol):
     try:
@@ -39,31 +36,39 @@ def fetch_annual_financials(symbol):
         return stock.financials.T
     except Exception:
         return pd.DataFrame()
-
+#Daily data
 @st.cache_data
 def fetch_daily_price_history(symbol):
     try:
         stock = yf.Ticker(symbol)
-        # Fetching 1-hour intervals for the last 1 day
         history = stock.history(period='1d', interval='1h')
         return history
     except Exception as e:
         st.error(f"Error fetching price history for {symbol}. Error: {e}")
         return pd.DataFrame()
     
-@st.cache_data
-def search_stock_symbols(query):
+#Search box
+def search_wrapper(query: str):
     if not query:
         return []
     try:
-        result = finnhub_client.search(query)
+
+        result = finnhub_client.symbol_lookup(query)
         
         stocks = [item for item in result.get('result', []) if item.get('type') == 'common stock']
-        return stocks
+        return [f"{item['symbol']} - {item['description']}" for item in stocks]
     except Exception as e:
-   
-        st.error(f"FATAL ERROR: Failed to search Finnhub. Check API Key/Network. Error: {e}")
+        # Note: Searchbox handles its own internal errors, but this logging helps
+        print(f"Finnhub search failed: {e}")
         return []
+
+@st.cache_data
+def search_stock_symbols(query):
+    # This is your old function, kept for compatibility if needed, 
+    # but the logic is now handled by search_wrapper and st_searchbox.
+    # We will still use the logic inside the wrapper.
+    return []
+
 
 def format_market_cap(value, currency):
     
@@ -84,28 +89,23 @@ if 'selected_symbol' not in st.session_state:
     st.session_state.selected_symbol = ''
 
 
-search_query = st.text_input('Enter a company name or stock symbol', '').upper()
+#Search bar nha cac bros
+selected_option = st_searchbox(
+    label="Enter a company name or stock symbol",
+    search_function=search_wrapper,
+    placeholder="Start typing to see stock suggestions (e.g., AAPL, GOOGL)...",
+    default_value=st.session_state.selected_symbol, 
+    clear_on_submit=False,
+    key="finnhub_search_box"
+)
 
-
-if search_query:
-    results = search_stock_symbols(search_query)
-
-    if results:
-        
-        options = [f"{item['symbol']} - {item['description']}" for item in results]
-        
-        current_selection_valid = st.session_state.selected_symbol in [opt.split(' - ')[0] for opt in options]
-        
-        default_index = 0
-        if current_selection_valid:
-            default_index = [opt.split(' - ')[0] for opt in options].index(st.session_state.selected_symbol)
-        
-        selected_option = st.selectbox("Select a stock:", options, index=default_index)
-        
-        
-        st.session_state.selected_symbol = selected_option.split(' - ')[0] if selected_option else ''
-    else:
-        st.session_state.selected_symbol = ''
+#Selection for users to choose(I think its kinda redundant bros)
+if selected_option:
+    # The result is the full "SYMBOL - DESCRIPTION" string; extract the symbol
+    st.session_state.selected_symbol = selected_option.split(' - ')[0]
+else:
+    # Clear the symbol if the search box is empty or cleared
+    st.session_state.selected_symbol = ''
 
 
 symbol_to_display = st.session_state.selected_symbol
@@ -195,7 +195,6 @@ if symbol_to_display:
                     x=alt.X('Year:O', sort='-x'),
                     y='Net Income'
                 ).properties(title='Net Income (Annual)')
-
-				
+                
                 st.altair_chart(revenue_chart, use_container_width=True)
                 st.altair_chart(net_income_chart, use_container_width=True)
