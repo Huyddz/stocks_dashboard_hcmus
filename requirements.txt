@@ -1,8 +1,10 @@
 streamlit
 yfinance
 pandas
-plotly
-requests
-streamlit-option-menu
 altair
+plotly
+streamlit-option-menu
 streamlit-searchbox
+torch
+transformers
+requests
