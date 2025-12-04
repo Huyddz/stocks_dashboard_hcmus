@@ -1,9 +1,8 @@
-yfinance
 streamlit
 pandas
+yfinance==0.2.54
+plotly==5.24.0
+altair==5.2.0
 streamlit-option-menu
-altair
-plotly
 streamlit-searchbox
 polygon-api-client
-polygon
