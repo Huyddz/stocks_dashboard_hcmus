@@ -1,15 +1,15 @@
-import altair as alt #Graph
-from streamlit_searchbox import st_searchbox #Search box update :3
-import plotly.graph_objects as go #Graph
-import streamlit as st #Deploy web
-import yfinance as yf #Data collecting from YahooFiance
-import pandas as pd #Graph support
-from polygon import RESTClient #API for auto suggestion (i hope it works)
-#API key(be careful)
-POLYGON_API_KEY = "WakFbeRcsuUV8Q8ECdZZz32KJaVeu2g2"
-polygon_client = RESTClient(api_key=POLYGON_API_KEY)
-st.write("Polygon key loaded:", POLYGON_API_KEY is not None)
-#Money matters
+import altair as alt  # Graph
+from streamlit_searchbox import st_searchbox  # Search box
+import plotly.graph_objects as go  # Graph
+import streamlit as st  # Deploy web
+import yfinance as yf  # Data collecting from Yahoo Finance
+import pandas as pd  # Table support
+import requests  # 🔥 NEW — used for autocomplete search API
+
+# ================================================================
+#                    FETCH STOCK INFO
+# ================================================================
+
 @st.cache_data
 def fetch_stock_info(symbol):
     try:
@@ -23,6 +23,7 @@ def fetch_stock_info(symbol):
         st.error(f"FATAL ERROR: Failed to fetch yfinance data for {symbol}. Error: {e}")
         return None
 
+
 @st.cache_data
 def fetch_quarterly_financials(symbol):
     try:
@@ -31,6 +32,7 @@ def fetch_quarterly_financials(symbol):
     except Exception:
         return pd.DataFrame()
 
+
 @st.cache_data
 def fetch_annual_financials(symbol):
     try:
@@ -38,6 +40,7 @@ def fetch_annual_financials(symbol):
         return stock.financials.T
     except Exception:
         return pd.DataFrame()
+
 
 @st.cache_data
 def fetch_daily_price_history(symbol):
@@ -48,43 +51,39 @@ def fetch_daily_price_history(symbol):
     except Exception as e:
         st.error(f"Error fetching price history for {symbol}. Error: {e}")
         return pd.DataFrame()
-    
 
+# ================================================================
+#                  AUTO-COMPLETE SEARCH (Yahoo)
+# ================================================================
 
 def search_wrapper(query: str, **kwargs):
-    
-    if not query or len(query.strip()) < 3:
+    if not query or len(query.strip()) < 2:
         return []
-    
+
     try:
-        
-        results = polygon_client.list_tickers(
-            search=query,
-            market='stocks',
-            type='CS', # Filter for Common Stock (CS) to narrow the search
-            order='asc',
-            limit=20 
-        )
-        
-        if not results.results:
-            st.info(f"Polygon returned no results for '{query}'. Check API status or symbol.")
+        url = f"https://query2.finance.yahoo.com/v1/finance/search?q={query}"
+        response = requests.get(url)
+
+        if response.status_code != 200:
             return []
-            
-        stocks = [f"{item.ticker} - {item.name}" for item in results.results]
-        return stocks
-        
-    except Exception as e:
-        st.error(f"Polygon API Search Failed: {e}. Check API Key or network.")
+
+        data = response.json()
+        results = []
+
+        for item in data.get("quotes", []):
+            if item.get("symbol") and item.get("shortname"):
+                results.append(f"{item['symbol']} - {item['shortname']}")
+
+        return results[:15]  # Limit suggestions
+
+    except:
         return []
 
-@st.cache_data
-def search_stock_symbols(query):
-
-    return []
-
+# ================================================================
+#                       FORMAT NUMBER
+# ================================================================
 
 def format_market_cap(value, currency):
-    
     if value >= 1_000_000_000_000:
         return f"{currency} {value / 1_000_000_000_000:.2f}T"
     elif value >= 1_000_000_000:
@@ -94,30 +93,28 @@ def format_market_cap(value, currency):
     else:
         return f"{currency} {value:,.0f}"
 
-# Dashboard
-st.title('Stock Dashboard by SongChiTienQuan')
+# ================================================================
+#                       DASHBOARD UI
+# ================================================================
 
+st.title('📊 Stock Dashboard by SongChiTienQuan')
 
 if 'selected_symbol' not in st.session_state:
     st.session_state.selected_symbol = ''
 
-
-# Search bar
 selected_option = st_searchbox(
     label="Enter a company name or stock symbol",
     search_function=search_wrapper,
     placeholder="Start typing to see stock suggestions (e.g., AAPL, GOOGL)...",
-    default_value=st.session_state.selected_symbol, 
+    default_value=st.session_state.selected_symbol,
     clear_on_submit=False,
-    key="polygon_search_box" 
+    key="stock_search_box"
 )
-
 
 if selected_option:
     st.session_state.selected_symbol = selected_option.split(' - ')[0]
 else:
     st.session_state.selected_symbol = ''
-
 
 symbol_to_display = st.session_state.selected_symbol
 
@@ -125,75 +122,68 @@ if symbol_to_display:
     information = fetch_stock_info(symbol_to_display)
 
     if information:
-        st.header('Company Information')
+        st.header('🏢 Company Information')
         st.subheader(f'Name: {information.get("longName", "N/A")}')
         
         currency = information.get('currency', 'USD')
         st.metric(label="Primary Trading Currency", value=currency)
         
         market_cap = information.get('marketCap', 0)
-        
         st.subheader(f'Market Cap: {format_market_cap(market_cap, currency)}')
         st.caption(f'Native Currency: {currency} | Raw Value: {market_cap:,}')
 
-        # Daily Chart
         price_history = fetch_daily_price_history(symbol_to_display)
         if not price_history.empty:
-            st.header('Daily Chart')
+            st.header('📈 Daily Chart')
             price_history = price_history.rename_axis('Date').reset_index()
-            
-            
             price_history['Date'] = pd.to_datetime(price_history['Date'])
             
-            candle_stick_chart = go.Figure(data=[go.Candlestick(x=price_history['Date'],
-                                                               open=price_history['Open'],
-                                                               low=price_history['Low'],
-                                                               high=price_history['High'],
-                                                               close=price_history['Close'])])
+            candle_stick_chart = go.Figure(data=[go.Candlestick(
+                x=price_history['Date'],
+                open=price_history['Open'],
+                low=price_history['Low'],
+                high=price_history['High'],
+                close=price_history['Close']
+            )])
             candle_stick_chart.update_layout(xaxis_rangeslider_visible=False)
             st.plotly_chart(candle_stick_chart, use_container_width=True)
 
-        
         quarterly_financials = fetch_quarterly_financials(symbol_to_display)
         annual_financials = fetch_annual_financials(symbol_to_display)
-        
+
         if not quarterly_financials.empty or not annual_financials.empty:
-            st.header('Financials')
-            
-            selection = None
+            st.header('📑 Financials')
+
             try:
                 from streamlit_option_menu import option_menu
                 selection = option_menu(
                     menu_title=None,
                     options=['Quarterly', 'Annual'],
-                    icons=['calendar4-quarter', 'calendar-range'],
+                    icons=['calendar4-week', 'calendar2-range'],
                     default_index=0,
                     orientation='horizontal'
                 )
-            except Exception as e:
-                print(f"Warning: Falling back to st.selectbox due to error: {e}")
+            except:
                 selection = st.selectbox('Period', ['Quarterly', 'Annual'])
 
             if selection == 'Quarterly' and not quarterly_financials.empty:
-                
                 quarterly_financials = quarterly_financials.rename_axis('Quarter').reset_index()
                 quarterly_financials['Quarter'] = quarterly_financials['Quarter'].astype(str)
-                
+
                 revenue_chart = alt.Chart(quarterly_financials).mark_bar(color='red').encode(
                     x=alt.X('Quarter:O', sort='-x'),
                     y='Total Revenue'
                 ).properties(title='Total Revenue (Quarterly)')
-                
+
                 net_income_chart = alt.Chart(quarterly_financials).mark_bar(color='orange').encode(
                     x=alt.X('Quarter:O', sort='-x'),
                     y='Net Income'
                 ).properties(title='Net Income (Quarterly)')
-                
+
                 st.altair_chart(revenue_chart, use_container_width=True)
                 st.altair_chart(net_income_chart, use_container_width=True)
-            
-            elif selection == 'Annual' and not annual_financials.empty:
-                
+
+            if selection == 'Annual' and not annual_financials.empty:
                 annual_financials = annual_financials.rename_axis('Year').reset_index()
                 annual_financials['Year'] = pd.to_datetime(annual_financials['Year']).dt.year.astype(str)
 
@@ -201,11 +191,11 @@ if symbol_to_display:
                     x=alt.X('Year:O', sort='-x'),
                     y='Total Revenue'
                 ).properties(title='Total Revenue (Annual)')
-                
+
                 net_income_chart = alt.Chart(annual_financials).mark_bar(color='orange').encode(
                     x=alt.X('Year:O', sort='-x'),
                     y='Net Income'
                 ).properties(title='Net Income (Annual)')
-                
+
                 st.altair_chart(revenue_chart, use_container_width=True)
                 st.altair_chart(net_income_chart, use_container_width=True)
