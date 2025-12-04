@@ -8,6 +8,7 @@ from polygon import RESTClient #API for auto suggestion (i hope it works)
 #API key(be careful)
 POLYGON_API_KEY = "WakFbeRcsuUV8Q8ECdZZz32KJaVeu2g2"
 polygon_client = RESTClient(api_key=POLYGON_API_KEY)
+st.write("Polygon key loaded:", POLYGON_API_KEY is not None)
 #Money matters
 @st.cache_data
 def fetch_stock_info(symbol):
