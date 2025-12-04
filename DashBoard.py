@@ -48,25 +48,25 @@ def fetch_daily_price_history(symbol):
         return pd.DataFrame()
     
 #Search box
-def search_wrapper(query: str):
+def search_wrapper(query: str, **kwargs):
     if not query:
         return []
     try:
-
         result = finnhub_client.symbol_lookup(query)
         
         stocks = [item for item in result.get('result', []) if item.get('type') == 'common stock']
         return [f"{item['symbol']} - {item['description']}" for item in stocks]
     except Exception as e:
-        # Note: Searchbox handles its own internal errors, but this logging helps
         print(f"Finnhub search failed: {e}")
         return []
 
 @st.cache_data
 def search_stock_symbols(query):
-    # This is your old function, kept for compatibility if needed, 
-    # but the logic is now handled by search_wrapper and st_searchbox.
-    # We will still use the logic inside the wrapper.
+
+    return []
+
+@st.cache_data
+def search_stock_symbols(query):
     return []
 
 
@@ -89,7 +89,7 @@ if 'selected_symbol' not in st.session_state:
     st.session_state.selected_symbol = ''
 
 
-#Search bar nha cac bros
+# searchbar bros
 selected_option = st_searchbox(
     label="Enter a company name or stock symbol",
     search_function=search_wrapper,
@@ -99,12 +99,10 @@ selected_option = st_searchbox(
     key="finnhub_search_box"
 )
 
-#Selection for users to choose(I think its kinda redundant bros)
+
 if selected_option:
-    # The result is the full "SYMBOL - DESCRIPTION" string; extract the symbol
     st.session_state.selected_symbol = selected_option.split(' - ')[0]
 else:
-    # Clear the symbol if the search box is empty or cleared
     st.session_state.selected_symbol = ''
 
 
