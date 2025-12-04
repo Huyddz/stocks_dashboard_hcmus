@@ -4,6 +4,5 @@ pandas
 streamlit-option-menu
 altair
 plotly
-watchdog
-finnhub-python
 streamlit-searchbox
+polygon-api-client
