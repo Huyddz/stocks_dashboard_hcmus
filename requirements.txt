@@ -1,5 +1,7 @@
 yfinance
 streamlit
+pandas
+streamlit-option-menu
 altair
 plotly
 watchdog
