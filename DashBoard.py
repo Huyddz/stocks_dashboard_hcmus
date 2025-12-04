@@ -62,7 +62,10 @@ def search_wrapper(query: str, **kwargs):
 
     try:
         url = f"https://query2.finance.yahoo.com/v1/finance/search?q={query}"
-        response = requests.get(url)
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        }
+        response = requests.get(url, headers=headers)
 
         if response.status_code != 200:
             return []
@@ -74,9 +77,9 @@ def search_wrapper(query: str, **kwargs):
             if item.get("symbol") and item.get("shortname"):
                 results.append(f"{item['symbol']} - {item['shortname']}")
 
-        return results[:15]  # Limit suggestions
+        return results[:15]
 
-    except:
+    except Exception as e:
         return []
 
 # ================================================================
