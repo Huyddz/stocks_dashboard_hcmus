@@ -191,7 +191,3 @@ if symbol_to_display:
                 
                 st.altair_chart(revenue_chart, use_container_width=True)
                 st.altair_chart(net_income_chart, use_container_width=True)
-                ).properties(title='Net Income (Annual)')
-                
-                st.altair_chart(revenue_chart, use_container_width=True)
-                st.altair_chart(net_income_chart, use_container_width=True)
