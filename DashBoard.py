@@ -5,6 +5,8 @@ import streamlit as st #Deploy web
 import yfinance as yf #Data collecting from YahooFiance
 import pandas as pd #Graph support
 import finnhub #Excahnge currency
+#API key(be careful)
+finnhub_client = finnhub.Client(api_key="d4ogi0pr01quuso9iqr0d4ogi0pr01quuso9iqrg")
 
 @st.cache_data
 def fetch_stock_info(symbol):
@@ -45,18 +47,24 @@ def fetch_daily_price_history(symbol):
         st.error(f"Error fetching price history for {symbol}. Error: {e}")
         return pd.DataFrame()
     
-# Function used by the streamlit_searchbox component
+
 def search_wrapper(query: str, **kwargs):
-    if not query:
+    
+    if not query or len(query.strip()) < 3:
         return []
+    
     try:
-        
         result = finnhub_client.symbol_lookup(query)
         
+        if result.get('count', 0) == 0 and result.get('result') == []:
+            st.info(f"Finnhub returned no results for '{query}'. Check API Key or Rate Limit.")
+            return []
+            
         stocks = [item for item in result.get('result', []) if item.get('type') == 'common stock']
         return [f"{item['symbol']} - {item['description']}" for item in stocks]
+        
     except Exception as e:
-        print(f"Finnhub search failed: {e}")
+        st.error(f"Finnhub API Search Failed: {e}. Check network connection.")
         return []
 
 @st.cache_data
