@@ -53,9 +53,27 @@ def get_sentiment(text: str):
 @st.cache_data
 def fetch_stock_info(symbol: str):
     try:
-        return yf.Ticker(symbol).info
-    except Exception:
+        ticker = yf.Ticker(symbol)
+
+      
+        fast = ticker.fast_info or {}
+
+        
+        safe = ticker.get_info() or {}
+
+        info = {
+            "longName": safe.get("longName") or safe.get("shortName") or symbol,
+            "currency": fast.get("currency") or safe.get("currency") or "USD",
+            "marketCap": fast.get("marketCap") or safe.get("marketCap") or 0,
+            "regularMarketPrice": fast.get("lastPrice")
+                or safe.get("regularMarketPrice")
+                or safe.get("currentPrice"),
+        }
+
+        return info
+    except Exception as e:
         return {}
+
 
 @st.cache_data
 def fetch_quarterly_financials(symbol: str):
@@ -165,17 +183,20 @@ if symbol:
     with st.spinner("Fetching company info..."):
         info = fetch_stock_info(symbol) or {}
 
-    if not info:
+    if not info or info.get("regularMarketPrice") is None:
         st.warning("No company information found for that symbol.")
     else:
-      
+
         st.header(" Company Information")
         st.subheader(f"Name: {info.get('longName', 'N/A')}")
+
         currency = info.get("currency", "USD")
         st.metric("Primary Trading Currency", currency)
+
         market_cap = info.get("marketCap", 0)
         st.subheader(f"Market Cap: {format_market_cap(market_cap, currency)}")
         st.caption(f"Raw Value: {market_cap:,}")
+
 
         # price chart
         with st.spinner("Fetching price history..."):
