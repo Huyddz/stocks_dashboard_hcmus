@@ -2,25 +2,179 @@ import altair as alt  # Graph
 from streamlit_searchbox import st_searchbox  # Search box
 import plotly.graph_objects as go  # Graph
 import streamlit as st  # Deploy web
-import streamlit.components.v1 as components #To deploy fe and be together
 import yfinance as yf  # Data collecting from Yahoo Finance
 import pandas as pd  # Table support
 import requests  #  autocomplete search API
 import torch #Sentiment predict
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-import pathlib #Create path
+st.set_page_config(page_title="Stock Dashboard by SongChiTienQuan", layout="wide")
+import streamlit as st
 
 st.set_page_config(page_title="Stock Dashboard by SongChiTienQuan", layout="wide")
 
-#LOAD AND EMBED YOUR HTML PAGE
-def load_html():
-    with open("assets/DashBoardHTML.html", "r", encoding="utf-8") as f:
-        return f.read()
+# Inject full-page HTML background + animations
+st.markdown("""
+<style>
+/* ROOT RESET */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { overflow-x: hidden !important; }
 
-html_content = load_html()
+/* BACKGROUND */
+html, body {
+    background: radial-gradient(circle at bottom, #050712, #020617);
+    height: 100%;
+    width: 100%;
+    overflow-x: hidden;
+}
 
-components.html(html_content, height=900, scrolling=True)
+/* Grid */
+.grid {
+    position: fixed;
+    width: 300%;
+    height: 300%;
+    background-image:
+        linear-gradient(rgba(0,245,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,245,255,0.05) 1px, transparent 1px);
+    background-size: 45px 45px;
+    transform: rotateX(65deg);
+    animation: gridMove 20s linear infinite;
+    z-index: -10;
+}
 
+@keyframes gridMove {
+    from { transform: translateY(0) rotateX(65deg); }
+    to   { transform: translateY(250px) rotateX(65deg); }
+}
+
+/* Earth */
+.earth-container {
+    position: fixed;
+    width: 420px;
+    height: 220px;
+    overflow: hidden;
+    bottom: 0;
+    right: 0;
+    border-radius: 400px 0 0 0;
+    z-index: -5;
+}
+
+.earth {
+    position: absolute;
+    width: 420px;
+    height: 420px;
+    border-radius: 50%;
+    background:
+        repeating-radial-gradient(circle, rgba(0,245,255,0.2) 0 1px, transparent 2px),
+        repeating-linear-gradient(90deg, rgba(0,245,255,0.15) 0 2px, transparent 4px),
+        radial-gradient(circle at 30% 30%, #00F5FF, #020617 70%);
+    filter: contrast(150%);
+    animation: spin 18s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+/* Radar */
+.radar {
+    position: fixed;
+    width: 450px;
+    height: 450px;
+    border: 2px solid rgba(0,245,255,0.15);
+    border-radius: 50%;
+    bottom: -150px;
+    right: -150px;
+    animation: radar 3s linear infinite;
+    z-index: -4;
+}
+
+@keyframes radar {
+    from { opacity: 1; transform: scale(0.4); }
+    to   { opacity: 0; transform: scale(1.4); }
+}
+
+/* Particles */
+.particle {
+    position: fixed;
+    width: 2px;
+    height: 2px;
+    background: #00F5FF;
+    box-shadow: 0 0 10px #00F5FF;
+    animation: float 10s linear infinite;
+    z-index: -1;
+}
+
+@keyframes float {
+    from { transform: translateY(100vh); opacity: 1; }
+    to   { transform: translateY(-10vh); opacity: 0; }
+}
+
+/* Frosted Panel (Center Dashboard) */
+.main-frosted-panel {
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 120px;
+
+    width: 70%;
+    padding: 25px;
+
+    background: rgba(0, 20, 40, 0.35);
+    backdrop-filter: blur(12px);
+
+    border-radius: 20px;
+    box-shadow: 0 0 25px rgba(0,200,255,0.15);
+    border: 1px solid rgba(0,180,255,0.45);
+}
+
+/* CENTER TITLE */
+.center-title {
+    text-align: center;
+    font-size: 26px;
+    margin-top: 100px;
+    margin-bottom: -60px;
+    color: #7ee7ff;
+    opacity: 0.45;
+    letter-spacing: 3px;
+}
+
+/* Nav Bar */
+#customNav {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 68px;
+    padding: 0 32px;
+    background: rgba(0,20,40,0.35);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0,180,255,0.4);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #7ee7ff;
+    font-family: 'Orbitron', sans-serif;
+}
+
+</style>
+
+<div class="grid"></div>
+<div class="earth-container"><div class="earth"></div></div>
+<div class="radar"></div>
+
+<div id="customNav">
+  <span style="font-size:18px;">SONG CHI TIEN QUAN</span>
+  <span>DASHBOARD</span>
+</div>
+
+<div class="center-title">AI MINIMUM STOCK EXCHANGE PACKET</div>
+
+<div class="main-frosted-panel">
+""", unsafe_allow_html=True)
+
+
+st.title("Stock Dashboard by SongChiTienQuan")
 
 # -------------------------
 # FINBERT (pretrained)
@@ -292,3 +446,18 @@ else:
 
                     rec = recommendation_from_sentiment(label, conf)
                     st.write(f"Recommendation(not totally right so be careful bros): {rec}")
+st.markdown("</div>", unsafe_allow_html=True)
+
+# Generate particles dynamically
+particle_js = """
+<script>
+for (let i = 0; i < 90; i++) {
+    const p = document.createElement("div");
+    p.className = "particle";
+    p.style.left = Math.random() * 100 + "vw";
+    p.style.animationDuration = (6 + Math.random() * 10) + "s";
+    document.body.appendChild(p);
+}
+</script>
+"""
+st.markdown(particle_js, unsafe_allow_html=True)
