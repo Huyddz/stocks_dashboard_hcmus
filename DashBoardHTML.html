@@ -14,13 +14,19 @@
     box-sizing: border-box;
 }
 
+html {
+    scroll-padding-top: 80px;
+}
+
 body {
     width: 100vw;
     height: 100vh;
     background: radial-gradient(circle at bottom, #050712, #020617);
     font-family: 'Orbitron', sans-serif;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     color: #00F5FF;
+    
 }
 
 /*  Background */
@@ -269,7 +275,8 @@ body {
 
 /* Frosted frame */
 .main-frosted-panel {
-    position: absolute;
+    position: relative;
+  
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -321,6 +328,95 @@ body {
 </head>
 
 <body>
+
+<!-- Navigation Menu -->
+<nav id="navMenu" style="
+    position:fixed;
+    top:0; left:0;
+    width:100%;
+    height:68px;
+    padding:0 32px;
+    background:rgba(0,20,40,0.35);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid rgba(0,180,255,0.4);
+    z-index:99999;
+    font-family:'Orbitron',sans-serif;
+    letter-spacing:2px;
+    color:#7ee7ff;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    transition:transform 0.3s ease;
+">
+
+    <!-- Team Name -->
+    <div style="display:flex; align-items:center; gap:16px;">
+        <span id="teamName" onclick="scrollToTop()" 
+            style="cursor:pointer; font-size:18px; font-weight:600;">
+            SONG CHI TIEN QUAN
+        </span>
+    </div>
+
+    <!-- Menu Items -->
+    <div style="display:flex; align-items:center; gap:40px;">
+        <span style="cursor:pointer; font-size:15px;" onclick="scrollToDashboard()">DASHBOARD</span>
+        <span style="cursor:pointer; font-size:15px;" onclick="scrollToContact()">CONTACT</span>
+    </div>
+
+</nav>
+
+
+
+<script>
+/* ----- NAVIGATION HIDE / SHOW ON SCROLL ----- */
+let lastScrollY = window.scrollY;
+let isClickScrolling = false;
+
+window.addEventListener('scroll', () => {
+    if (isClickScrolling) return;
+
+    const nav = document.getElementById('navMenu');
+
+    if (window.scrollY > lastScrollY) {
+        nav.style.transform = "translateY(-80px)";
+    } else {
+        nav.style.transform = "translateY(0)";
+    }
+
+    lastScrollY = window.scrollY;
+});
+
+/* ----- Jump Functions ----- */
+function scrollToDashboard() {
+    isClickScrolling = true;
+    document.querySelector(".center-title").scrollIntoView({ behavior: "smooth" });
+
+    setTimeout(() => {
+        isClickScrolling = false;
+    }, 600); 
+}
+
+function scrollToContact() {
+    isClickScrolling = true;
+    document.getElementById("contactFooter").scrollIntoView({ behavior: "smooth" });
+
+    setTimeout(() => {
+        isClickScrolling = false;
+    }, 600);
+}
+
+function scrollToTop() {
+    isClickScrolling = true;
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+    setTimeout(() => { isClickScrolling = false; }, 600);
+}
+</script>
+
 
 <div class="grid"></div>
 
@@ -382,6 +478,30 @@ for (let i = 0; i < 90; i++) {
     document.body.appendChild(p);
 }
 </script>
+
+<!-- Footer Contact -->
+<footer id="contactFooter" style="
+    position:relative;
+    width:100%;
+    padding:20px 0;
+    text-align:center;
+    background:rgba(0,20,40,0.45);
+    backdrop-filter:blur(10px);
+    border-top:1px solid rgba(0,180,255,0.4);
+    font-family:'Orbitron',sans-serif;
+    font-size:13px;
+    letter-spacing:1px;
+    color:#7ee7ff;
+    z-index:9999;
+    margin-top:40px;  
+">
+    <p>📘 Facebook: <a href="#" style="color:#29b6f6;">facebook.com/songchitienquan</a></p>
+    <p>📞 Phone number: 0123 456 789</p>
+    <p>📧 Email: songchitienquan@gmail.com</p>
+    <p>📍 Address: 227 Nguyen Van Cu Street</p>
+</footer>
+
+
 
 </body>
 </html>
