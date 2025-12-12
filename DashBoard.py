@@ -14,26 +14,32 @@ import streamlit as st
 
 st.markdown("""
 <style>
-/* ----- RESET ----- */
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+/* FIX CLICK-FREEZE */
+body *, html * {
+    pointer-events: auto !important;
+}
+
+/* Background */
 body {
     background: radial-gradient(circle at bottom, #050712, #020617);
     overflow-x: hidden !important;
 }
 
-/* ----- Background Grid ----- */
+/* Grid */
 .grid {
     position: fixed;
     top: 0;
     left: 0;
     width: 300%;
     height: 70%;
-    z-index: -2;
+    z-index: -3;
     background-image:
         linear-gradient(rgba(0,245,255,0.05) 1px, transparent 1px),
         linear-gradient(90deg, rgba(0,245,255,0.05) 1px, transparent 1px);
@@ -48,7 +54,7 @@ body {
     to   { transform: translateY(250px) rotateX(65deg); }
 }
 
-/* ----- Earth ----- */
+/* Earth */
 .earth-container {
     position: fixed;
     bottom: 0;
@@ -56,8 +62,7 @@ body {
     width: 420px;
     height: 220px;
     overflow: hidden;
-    z-index: -2;
-    pointer-events: none;
+    z-index: -3;
 }
 
 .earth {
@@ -77,18 +82,17 @@ body {
     to   { transform: rotate(360deg); }
 }
 
-/* ----- Radar ----- */
+/* Radar */
 .radar {
     position: fixed;
     width: 450px;
     height: 450px;
-    border-radius: 50%;
     bottom: -150px;
     right: -150px;
     border: 2px solid rgba(0,245,255,0.15);
+    border-radius: 50%;
     animation: radar 3s linear infinite;
-    z-index: -2;
-    pointer-events: none;
+    z-index: -3;
 }
 
 @keyframes radar {
@@ -96,15 +100,14 @@ body {
     to   { opacity: 0; transform: scale(1.4); }
 }
 
-/* ----- Particles ----- */
+/* Particles */
 .particle {
     position: fixed;
     width: 2px;
     height: 2px;
     background: #00F5FF;
     box-shadow: 0 0 10px #00F5FF;
-    z-index: -3;
-    pointer-events: none;
+    z-index: -4;
     animation: float 10s linear infinite;
 }
 
@@ -113,23 +116,25 @@ body {
     to   { transform: translateY(-10vh); }
 }
 
-/* ----- HUD Text ----- */
+/* HUD text */
 .hud {
     position: fixed;
     font-size: 14px;
     color: #00F5FF;
     opacity: 0.8;
-    z-index: -1;
+    z-index: -2;
     pointer-events: none;
 }
+
 .hud.left { top: 55%; left: 40px; }
 .hud.right { top: 55%; right: 40px; }
 
-/* ----- Force Streamlit Front Layer ----- */
-.block-container, .css-12ttj6m, .css-1v3fvcr {
+/* Streamlit widgets ON TOP */
+.block-container {
     position: relative;
-    z-index: 10 !important;
+    z-index: 20 !important;
 }
+
 </style>
 
 <div class="grid"></div>
@@ -155,7 +160,7 @@ MARKET: LIVE
 </div>
 
 <script>
-// ----- Generate particles -----
+// Generate particles ONCE
 for (let i = 0; i < 80; i++) {
     const p = document.createElement("div");
     p.className = "particle";
@@ -164,10 +169,10 @@ for (let i = 0; i < 80; i++) {
     document.body.appendChild(p);
 }
 </script>
+
 """, unsafe_allow_html=True)
 
-
-
+st.title("Stock Dashboard by SongChiTienQuan")
 # -------------------------
 # FINBERT (pretrained)
 # -------------------------
@@ -305,7 +310,7 @@ def recommendation_from_sentiment(label, confidence):
 # -------------------------
 # DASHBOARD UI
 # -------------------------
-st.title("Stock Dashboard by SongChiTienQuan")
+
 
 if "selected_symbol" not in st.session_state:
     st.session_state.selected_symbol = ""
