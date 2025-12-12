@@ -10,8 +10,7 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 st.set_page_config(page_title="Stock Dashboard by SongChiTienQuan", layout="wide")
 import streamlit as st
 
-# INSERT HTML BACKGROUND LAYER
-
+#Inject HTML
 st.markdown("""
 <style>
 /* ----- RESET ----- */
@@ -439,7 +438,7 @@ else:
                     st.write(f"Recommendation(not totally right so be careful bros): {rec}")
 st.markdown("</div>", unsafe_allow_html=True)
 
-# Generate particles dynamically
+
 particle_js = """
 <script>
 for (let i = 0; i < 90; i++) {
