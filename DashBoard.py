@@ -12,16 +12,15 @@ import pathlib #Create path
 
 st.set_page_config(page_title="Stock Dashboard by SongChiTienQuan", layout="wide")
 
-html_path = pathlib.Path("assets/DashBoardHTML.html")
+#LOAD AND EMBED YOUR HTML PAGE
+def load_html():
+    with open("assets/DashBoardHTML.html", "r", encoding="utf-8") as f:
+        return f.read()
 
-# Load HTML content
-with open(html_path, "r", encoding="utf-8") as f:
-    html_code = f.read()
+html_content = load_html()
 
-# Display webpage header
-components.html(html_code, height=900, scrolling=True)
+components.html(html_content, height=900, scrolling=True)
 
-st.title("Stock Dashboard by SongChiTienQuan")
 
 # -------------------------
 # FINBERT (pretrained)
