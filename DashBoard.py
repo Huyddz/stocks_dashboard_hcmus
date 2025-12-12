@@ -8,15 +8,16 @@ import pandas as pd  # Table support
 import requests  #  autocomplete search API
 import torch #Sentiment predict
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import pathlib
 
+html_path = pathlib.Path("assets/DashBoardHTML.html")
 
-# Load HTML template
-with open("assets/DashBoardHTML.html", "r", encoding="utf-8") as f:
+# Load HTML content
+with open(html_path, "r", encoding="utf-8") as f:
     html_code = f.read()
 
-# Inject HTML into streamlit
-components.html(html_code, height=800, scrolling=True)
-
+# Display webpage header
+components.html(html_code, height=900, scrolling=True)
 
 
 st.set_page_config(page_title="Stock Dashboard by SongChiTienQuan", layout="wide")
