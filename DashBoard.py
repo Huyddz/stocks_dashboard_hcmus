@@ -63,9 +63,7 @@ body {
     z-index: -2;
     pointer-events: none;
 
-
 }
-
 .earth {
 
     width: 420px;
@@ -77,10 +75,7 @@ body {
         repeating-radial-gradient(circle, rgba(0,245,255,0.2) 0 1px, transparent 2px),
         repeating-linear-gradient(90deg, rgba(0,245,255,0.15) 0 2px, transparent 4px),
         radial-gradient(circle at 30% 30%, #00F5FF, #020617 70%);
-
-
 }
-
 @keyframes spin {
     from { transform: rotate(0deg); }
     to   { transform: rotate(360deg); }
@@ -116,58 +111,19 @@ body {
     z-index: -3;
     pointer-events: none;
     animation: float 10s linear infinite;
-
 }
-
 @keyframes float {
     from { transform: translateY(100vh); }
     to   { transform: translateY(-10vh); }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
-
 /* ----- HUD Text ----- */
 .hud {
-
-
-
-
-
-
-
-
-
-
-
     position: fixed;
     font-size: 14px;
     color: #00F5FF;
     opacity: 0.8;
     z-index: -1;
     pointer-events: none;
-
-
-
-
-
-
-
 
 }
 .hud.left { top: 55%; left: 40px; }
@@ -354,7 +310,6 @@ def recommendation_from_sentiment(label, confidence):
 # -------------------------
 # DASHBOARD UI
 # -------------------------
-st.title("Stock Dashboard by SongChiTienQuan")
 
 if "selected_symbol" not in st.session_state:
     st.session_state.selected_symbol = ""
