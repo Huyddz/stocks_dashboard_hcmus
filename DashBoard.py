@@ -12,35 +12,31 @@ import streamlit as st
 
 # INSERT HTML BACKGROUND LAYER
 
+# ======== GLOBAL CUSTOM BACKGROUND & GLOW EFFECTS ========
 st.markdown("""
 <style>
-/* ----- RESET ----- */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
 
 body {
     background: radial-gradient(circle at bottom, #050712, #020617);
-    overflow-x: hidden !important;
+    font-family: 'Orbitron', sans-serif;
+    overflow-x: hidden;
+    color: #00F5FF;
 }
 
-/* ----- Background Grid ----- */
+/* GLOW GRID (bottom perspective) */
 .grid {
     position: fixed;
-    top: 0;
+    bottom: -200px;
     left: 0;
     width: 300%;
-    height: 70%;
-    z-index: -2;
+    height: 120%;
     background-image:
         linear-gradient(rgba(0,245,255,0.05) 1px, transparent 1px),
         linear-gradient(90deg, rgba(0,245,255,0.05) 1px, transparent 1px);
     background-size: 45px 45px;
     transform: rotateX(65deg);
     animation: gridMove 20s linear infinite;
-    pointer-events: none;
+    z-index: -3;
 }
 
 @keyframes gridMove {
@@ -48,28 +44,27 @@ body {
     to   { transform: translateY(250px) rotateX(65deg); }
 }
 
-/* ----- Earth ----- */
+/* EARTH + GLOW */
 .earth-container {
     position: fixed;
-    bottom: 0;
-    right: 0;
     width: 420px;
     height: 220px;
     overflow: hidden;
+    bottom: 0;
+    right: 0;
     z-index: -2;
-    pointer-events: none;
 }
 
 .earth {
+    position: absolute;
     width: 420px;
     height: 420px;
     border-radius: 50%;
-    position: absolute;
-    animation: spin 18s linear infinite;
     background:
         repeating-radial-gradient(circle, rgba(0,245,255,0.2) 0 1px, transparent 2px),
         repeating-linear-gradient(90deg, rgba(0,245,255,0.15) 0 2px, transparent 4px),
         radial-gradient(circle at 30% 30%, #00F5FF, #020617 70%);
+    animation: spin 18s linear infinite;
 }
 
 @keyframes spin {
@@ -77,96 +72,68 @@ body {
     to   { transform: rotate(360deg); }
 }
 
-/* ----- Radar ----- */
-.radar {
+/* SCANNING LIGHT BEAM */
+.scan {
     position: fixed;
-    width: 450px;
-    height: 450px;
-    border-radius: 50%;
-    bottom: -150px;
-    right: -150px;
-    border: 2px solid rgba(0,245,255,0.15);
-    animation: radar 3s linear infinite;
-    z-index: -2;
-    pointer-events: none;
+    width: 250px;
+    height: 10px;
+    right: 80px;
+    bottom: 100px;
+    background: linear-gradient(to right,
+        transparent,
+        rgba(0, 245, 255, 0.9),
+        transparent
+    );
+    animation: scanMove 3s linear infinite;
+    box-shadow: 0 0 20px rgba(0, 245, 255, 0.8);
+    z-index: -1;
 }
 
-@keyframes radar {
-    from { opacity: 1; transform: scale(0.4); }
-    to   { opacity: 0; transform: scale(1.4); }
+@keyframes scanMove {
+    from { transform: translateY(0); opacity: 0.5; }
+    50%  { opacity: 1; }
+    to   { transform: translateY(-200px); opacity: 0.3; }
 }
 
-/* ----- Particles ----- */
+/* PARTICLE FLOATING BEAMS */
 .particle {
     position: fixed;
     width: 2px;
     height: 2px;
     background: #00F5FF;
     box-shadow: 0 0 10px #00F5FF;
-    z-index: -3;
-    pointer-events: none;
-    animation: float 10s linear infinite;
-}
-
-@keyframes float {
-    from { transform: translateY(100vh); }
-    to   { transform: translateY(-10vh); }
-}
-
-/* ----- HUD Text ----- */
-.hud {
-    position: fixed;
-    font-size: 14px;
-    color: #00F5FF;
-    opacity: 0.8;
+    animation: floatUp 10s linear infinite;
     z-index: -1;
-    pointer-events: none;
 }
-.hud.left { top: 55%; left: 40px; }
-.hud.right { top: 55%; right: 40px; }
 
-/* ----- Force Streamlit Front Layer ----- */
-.block-container, .css-12ttj6m, .css-1v3fvcr {
-    position: relative;
-    z-index: 10 !important;
+@keyframes floatUp {
+    from { transform: translateY(100vh); opacity: 1; }
+    to   { transform: translateY(-10vh); opacity: 0; }
 }
+
 </style>
+""", unsafe_allow_html=True)
 
+st.markdown("""
 <div class="grid"></div>
 
 <div class="earth-container">
     <div class="earth"></div>
 </div>
 
-<div class="radar"></div>
-
-<div class="hud left">
-NODE: ACTIVE<br>
-PACKET: 0.0021ms<br>
-FLOW: STABLE<br>
-AI CORE: ONLINE
-</div>
-
-<div class="hud right">
-GLOBAL LINK: READY<br>
-GRID SYNC: 100%<br>
-SECURITY: MAX<br>
-MARKET: LIVE
-</div>
+<div class="scan"></div>
 
 <script>
-// ----- Generate particles -----
 for (let i = 0; i < 80; i++) {
     const p = document.createElement("div");
     p.className = "particle";
     p.style.left = Math.random() * 100 + "vw";
-    p.style.animationDuration = (6 + Math.random() * 10) + "s";
+    p.style.animationDuration = (8 + Math.random() * 6) + "s";
     document.body.appendChild(p);
 }
 </script>
 """, unsafe_allow_html=True)
 
-st.title("Stock Dashboard by SongChiTienQuan")
 
 # -------------------------
 # FINBERT (pretrained)
