@@ -2,11 +2,22 @@ import altair as alt  # Graph
 from streamlit_searchbox import st_searchbox  # Search box
 import plotly.graph_objects as go  # Graph
 import streamlit as st  # Deploy web
+import streamlit.components.v1 as components #To deploy fe and be together
 import yfinance as yf  # Data collecting from Yahoo Finance
 import pandas as pd  # Table support
 import requests  #  autocomplete search API
 import torch #Sentiment predict
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
+
+# Load HTML template
+with open("assets/DashBoardHTML.html", "r", encoding="utf-8") as f:
+    html_code = f.read()
+
+# Inject HTML into streamlit
+components.html(html_code, height=800, scrolling=True)
+
+
 
 st.set_page_config(page_title="Stock Dashboard by SongChiTienQuan", layout="wide")
 
