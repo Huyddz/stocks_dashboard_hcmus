@@ -130,6 +130,37 @@ body {
     position: relative;
     z-index: 10;
 }
+
+/* SAFE cyberpunk font styling */
+
+body,
+.block-container,
+.stMarkdown,
+p,
+h1, h2, h3, h4 {
+    font-family: 'Orbitron', system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    color: #9ef6ff;
+}
+
+/* INPUTS ONLY (this is the key fix) */
+.stTextInput input,
+.stTextArea textarea,
+.stSelectbox select {
+    font-family: 'Orbitron', system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* BUTTONS */
+.stButton button {
+    font-family: 'Orbitron', system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+
 </style>
 
 <div class="navbar background-layer">
