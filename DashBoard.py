@@ -131,34 +131,114 @@ body {
     z-index: 10;
 }
 
-/* SAFE cyberpunk font styling */
+/* ============================= */
+/* CYBERPUNK GLOBAL FONT SYSTEM */
+/* ============================= */
 
-body,
-.block-container,
-.stMarkdown,
-p,
+body, 
+.block-container, 
+.stMarkdown, 
+.stTextInput input, 
+.stTextArea textarea, 
+.stButton button, 
+.stMetric, 
+label, 
+p, 
 h1, h2, h3, h4 {
     font-family: 'Orbitron', system-ui, sans-serif;
     font-weight: 600;
-    letter-spacing: 0.6px;
+    letter-spacing: 0.9px;
     color: #9ef6ff;
 }
 
-/* INPUTS ONLY (this is the key fix) */
-.stTextInput input,
-.stTextArea textarea,
-.stSelectbox select {
-    font-family: 'Orbitron', system-ui, sans-serif;
-    font-weight: 600;
-    letter-spacing: 0.5px;
+/* ============================= */
+/* MAIN TITLE – CYBERPUNK HERO  */
+/* ============================= */
+
+h1 {
+    font-weight: 900;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #00f5ff;
+    text-shadow:
+        0 0 6px rgba(0,245,255,0.6),
+        0 0 16px rgba(0,245,255,0.45),
+        0 0 32px rgba(0,180,255,0.35);
 }
 
-/* BUTTONS */
-.stButton button {
-    font-family: 'Orbitron', system-ui, sans-serif;
-    font-weight: 700;
-    letter-spacing: 1px;
+/* ============================= */
+/* SECTION HEADERS */
+/* ============================= */
+
+h2, h3 {
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #7ee7ff;
+    text-shadow:
+        0 0 4px rgba(0,245,255,0.5),
+        0 0 12px rgba(0,180,255,0.35);
 }
+
+/* ============================= */
+/* SEARCH BOX – CYBER TERMINAL */
+/* ============================= */
+
+.stTextInput input {
+    background: rgba(0, 20, 40, 0.65);
+    border: 1px solid rgba(0, 245, 255, 0.6);
+    color: #ccf6ff;
+    font-weight: 600;
+    letter-spacing: 1px;
+    box-shadow:
+        inset 0 0 10px rgba(0,245,255,0.15),
+        0 0 10px rgba(0,245,255,0.25);
+}
+
+/* ============================= */
+/* BUTTONS – NEON ACTION */
+/* ============================= */
+
+.stButton button {
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #001018;
+    background: linear-gradient(135deg, #00f5ff, #008cff);
+    border: none;
+    box-shadow:
+        0 0 12px rgba(0,245,255,0.6),
+        0 0 24px rgba(0,140,255,0.45);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.stButton button:hover {
+    transform: translateY(-1px);
+    box-shadow:
+        0 0 18px rgba(0,245,255,0.9),
+        0 0 36px rgba(0,140,255,0.6);
+}
+
+/* ============================= */
+/* METRICS – HUD STYLE */
+/* ============================= */
+
+[data-testid="stMetricValue"] {
+    font-weight: 900;
+    font-size: 26px;
+    color: #00f5ff;
+    text-shadow: 0 0 10px rgba(0,245,255,0.7);
+}
+
+/* ============================= */
+/* FOOTER CYBER STYLE */
+/* ============================= */
+
+footer, .footer {
+    font-weight: 600;
+    letter-spacing: 1.4px;
+    color: #8eefff;
+    text-shadow: 0 0 8px rgba(0,245,255,0.4);
+}
+
 
 
 </style>
