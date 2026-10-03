@@ -8,3 +8,6 @@ streamlit-searchbox
 torch
 transformers
 requests
+sentencepiece
+tokenizers
+protobuf
