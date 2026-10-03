@@ -6,7 +6,7 @@ import yfinance as yf  # Data collecting from Yahoo Finance
 import pandas as pd  # Table support
 import requests  #  autocomplete search API
 import torch #Sentiment predict
-from transformers import AutoModelForSequenceClassification, BertTokenizer
+from transformers import BertForSequenceClassification, BertTokenizer
 st.set_page_config(page_title="Stock Dashboard by SongChiTienQuan", layout="wide")
 import streamlit as st
 
@@ -284,7 +284,7 @@ st.title("Stock Dashboard by SongChiTienQuan")
 def load_finbert():
     model_name = "yiyanghkust/finbert-tone"
     tokenizer = BertTokenizer.from_pretrained(model_name)
-    model = AutoModelForSequenceClassification.from_pretrained(model_name)
+    model = BertForSequenceClassification.from_pretrained(model_name)
     return tokenizer, model
 
 tokenizer, model = load_finbert()
