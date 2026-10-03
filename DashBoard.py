@@ -283,7 +283,7 @@ st.title("Stock Dashboard by SongChiTienQuan")
 @st.cache_resource
 def load_finbert():
     model_name = "yiyanghkust/finbert-tone"
-    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
+    tokenizer = BertTokenizer.from_pretrained(model_name)
     model = AutoModelForSequenceClassification.from_pretrained(model_name)
     return tokenizer, model
 
