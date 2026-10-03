@@ -6,7 +6,7 @@ import yfinance as yf  # Data collecting from Yahoo Finance
 import pandas as pd  # Table support
 import requests  #  autocomplete search API
 import torch #Sentiment predict
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import AutoModelForSequenceClassification, BertTokenizer
 st.set_page_config(page_title="Stock Dashboard by SongChiTienQuan", layout="wide")
 import streamlit as st
 
